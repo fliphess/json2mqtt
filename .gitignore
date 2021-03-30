@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+settings.yaml
+toon2mqtt.log settings.yaml
+.idea
+main.py
