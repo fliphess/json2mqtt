@@ -130,4 +130,3 @@ dmypy.json
 settings.yaml
 toon2mqtt.log settings.yaml
 .idea
-main.py
