@@ -129,7 +129,7 @@ Optional elements are:
 - `topic` - Override the topic where to send the data to.
           (The topic is appended with the value of the  `name` element)
 - `host`  - The host of the http api to connect to.
-- `port`  - The port of the http api to connect to (set `ssl: true` to enable ssl)
+- `port`  - The port of the http api to connect to (set `use_ssl: true` to enable ssl)
 - `use_ssl`   - Use ssl for this connection
 
 A `field` element consists of 2 fields:
@@ -179,7 +179,7 @@ By setting the host, port and ssl settings, in the schema, any json api can be c
 
 You can control the daemon over MQTT.
 
-You can start and stop timers, add, remove and reload schemas and reloading the settings file.
+You can start and stop timers, add, remove and reload schemas.
 
 
 ## MQTT Topics:
@@ -201,10 +201,10 @@ home/toon2mqtt/<schema name>/request/url         # The full url of the request
 The topics to create and manipulate the schemas
 
 ```
-home/toon2mqtt/command/schema/add                # Add a json schema (from file)
-home/toon2mqtt/command/schema/remove             # Remove/Disable a schema (file)
-home/toon2mqtt/command/schema/list               # List all json schemas (inbuild and files)
-home/toon2mqtt/command/schema/import             # Import all schemas from disk (inbuild in files)
+home/toon2mqtt/command/schema/add                # Add a json schema
+home/toon2mqtt/command/schema/remove             # Remove/Disable a schema
+home/toon2mqtt/command/schema/list               # List all json schemas
+home/toon2mqtt/command/schema/import             # Import all schemas from disk
 home/toon2mqtt/command/schema/dump               # Write all schemas to disk
 ```
 
