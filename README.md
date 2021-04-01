@@ -78,6 +78,32 @@ docker run \
 TODO
 
 
+## The `settings.yaml` file 
+
+The config file will be created on first run if the config file does not exist. It will fill up the required fields with the default values. This will not automagically work, as you need to configure your broker. 
+
+A full configuration file contains:
+
+```
+## MQTT Broker config
+mqtt_host: "some.broker"
+mqtt_port: 1883
+mqtt_username: "username"
+mqtt_password: "password"
+mqtt_topic: home/toon2mqtt
+
+mqtt_ssl: true
+mqtt_cert: "/etc/ssl/cert.pem"
+
+
+## Toon settings
+toon_host: 10.30.1.127
+toon_port: 80
+
+
+## Schema settings
+schema_dir: ./schemas
+```
 
 ## Schemas
 
