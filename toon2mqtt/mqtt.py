@@ -1,4 +1,3 @@
-import json
 import os
 import socket
 import sys
@@ -43,6 +42,7 @@ class MQTTListener(mqtt.Client):
         self.logger.error("Connection to broker failed... Reconnecting.")
 
     def on_message(self, mqttc, obj, msg):
+        # TODO - Add control
         print(obj)
         print(msg)
         self.logger.info("Incoming message: {}".format(msg.payload))
@@ -50,7 +50,7 @@ class MQTTListener(mqtt.Client):
     def on_subscribe(self, mqttc, obj, mid, granted_qos):
         self.logger.info("Subscribed to: {} {}".format(str(mid), str(granted_qos)))
 
-    def _setup_listener(self):
+    def setup_listener(self):
         self.reconnect_delay_set(min_delay=1, max_delay=30)
         self.will_set(self.online_topic, payload=0, qos=0, retain=True)
 
@@ -68,7 +68,7 @@ class MQTTListener(mqtt.Client):
         self.connect(host=self.host, port=self.port, keepalive=60)
 
     def run(self):
-        self._setup_listener()
+        self.setup_listener()
 
         self.scheduler = Scheduler(client=self)
         self.scheduler.start()

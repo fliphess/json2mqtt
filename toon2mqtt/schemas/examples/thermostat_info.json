@@ -1,0 +1,18 @@
+{
+    "result":"ok",
+    "currentTemp":"1986",
+    "currentSetpoint":"1500",
+    "currentInternalBoilerSetpoint":"6",
+    "programState":"0",
+    "activeState":"2",
+    "nextProgram":"-1",
+    "nextState":"-1",
+    "nextTime":"0",
+    "nextSetpoint":"0",
+    "randomConfigId":"1804289383",
+    "errorFound":"255",
+    "connection":"0",
+    "burnerInfo":"0",
+    "otCommError":"0",
+    "currentModulationLevel":"0"
+}

@@ -1,0 +1,10 @@
+{
+    "sampleTime": "29-03-2021 19:26:00",
+    "boilerSetpoint": 0,
+    "roomTempSetpoint": 20,
+    "boilerPressure": 0,
+    "roomTemp": 20.65,
+    "boilerOutTemp": null,
+    "boilerInTemp": null,
+    "boilerModulationLevel": 0
+}

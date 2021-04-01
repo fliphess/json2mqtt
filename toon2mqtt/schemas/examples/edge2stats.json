@@ -1,0 +1,13 @@
+{
+    "last": 67,
+    "shortest": 60,
+    "longest": 48243,
+    "average": 74.606949,
+    "txAckedAfterTries": [11308,0,0],
+    "txNacked": 1,
+    "txTimedOut": 0,
+    "pkgsLost": 0,
+    "rxAcked": 11308,
+    "rxNacked": 0,
+    "_": "_"
+}

@@ -3,22 +3,9 @@ import argparse
 import sys
 
 from pid import PidFile, PidFileAlreadyLockedError
-
 from toon2mqtt.logging import log
 from toon2mqtt.mqtt import MQTTListener
-from toon2mqtt.schemas.boilervalues import BOILERVALUES_SCHEMA
-from toon2mqtt.schemas.edge2stats import EDGE_2_STATS_SCHEMA
-from toon2mqtt.schemas.module_version import MODULE_VERSION_SCHEMA
-from toon2mqtt.settings import (
-    Settings,
-    ConfigError,
-)
-
-schemas = [
-    BOILERVALUES_SCHEMA,
-    EDGE_2_STATS_SCHEMA,
-    MODULE_VERSION_SCHEMA,
-]
+from toon2mqtt.settings import Settings, ConfigError, Schemas
 
 
 def parse_arguments():
@@ -65,6 +52,8 @@ def main():
             logger.info("Reading configuration file {}".format(arguments.filename))
 
             settings = Settings(filename=arguments.filename)
+            schemas = Schemas(schema_dir=settings.get('schema_dir'), logger=logger)
+            schemas.import_all()
 
             logger.info("Starting MQTT Listener server")
             server = MQTTListener(

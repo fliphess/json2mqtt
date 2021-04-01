@@ -1,11 +1,17 @@
+import glob
+import json
 import os
-from urllib.parse import urljoin
 
+from json import JSONDecodeError
 from ruamel import yaml
 from ruamel.yaml.composer import ComposerError
 
 
 SETTINGS_SCHEMA = {
+    "schema_dir": {
+        "type": str,
+        "default": "./schemas",
+    },
     "mqtt_host": {
         "type": str,
         "default": "localhost",
@@ -67,8 +73,13 @@ class BaseClass(object):
         super().__init__()
         self.data = data or {}
 
+    @staticmethod
+    def _read(filename):
+        with open(filename, 'r') as fh:
+            return fh.read()
+
     def all(self):
-        return self.data
+        return self.data.items()
 
     def get(self, key, default=None):
         return self.data.get(key, default)
@@ -77,6 +88,9 @@ class BaseClass(object):
         self.data.update(
             {key: value}
         )
+
+    def delete(self, key):
+        self.data.pop(key)
 
     def update(self, data):
         self.data.update(
@@ -125,8 +139,7 @@ class Settings(BaseClass, metaclass=Singleton):
         """ Read a yaml settings file
             :return: a yaml settings object
         """
-        with open(self.filename, 'r') as fh:
-            content = fh.read()
+        content = self._read(filename=self.filename)
 
         try:
             return self.yaml.load(content)
@@ -136,16 +149,7 @@ class Settings(BaseClass, metaclass=Singleton):
             for item in self.yaml.load_all(content):
                 return item
 
-    def write(self, data, overwrite=False):
-        """ Write a yaml settings file
-
-        :param data:        The data to write to the file
-        :param overwrite:   To overwrite the file or not (defailt: false)
-        :return:            None
-        """
-        if not overwrite and os.path.isfile(self.filename):
-            raise FileExistsError(self.filename)
-
+    def write(self, data):
         with open(self.filename, 'w+') as fh:
             self.yaml.dump(data, fh)
 
@@ -172,11 +176,97 @@ class Settings(BaseClass, metaclass=Singleton):
             :return: None
         """
         self.write(
-            data={key: SETTINGS_SCHEMA[key]["default"] for key in SETTINGS_SCHEMA},
-            overwrite=False
+            data={key: SETTINGS_SCHEMA[key]["default"] for key in SETTINGS_SCHEMA}
         )
 
     def reload(self):
         """ Reload a yaml settings object: reread from file
         """
         self.__init__(filename=self.filename)
+
+
+class Schemas(BaseClass, metaclass=Singleton):
+    class_name = 'Schemas'
+
+    default_schema_files = [
+        "boilervalues.json",
+        "module_version.json",
+        "thermostat_info.json",
+        "edge2stats.json"
+    ]
+
+    def __init__(self, schema_dir, logger):
+        super().__init__(data={})
+        self.schema_dir = schema_dir
+        self.logger = logger
+
+        self.buildin_schema_files = [
+            os.path.join(os.path.dirname(__file__), "schemas", schema)
+            for schema in self.default_schema_files
+        ]
+
+        self.external_schema_files = glob.glob(os.path.join(schema_dir, "*.json"))
+
+        self.schema_files = [
+            f for f in self.buildin_schema_files + self.external_schema_files
+            if os.path.isfile(f)
+        ]
+
+    def reload(self):
+        self.logger.debug(f'Reloading all schemas')
+        self.__init__(logger=self.logger, schema_dir=self.schema_dir)
+
+    def add(self, filename):
+        schema = self.read(filename=filename)
+
+        if schema:
+            name = schema.get('name')
+
+            schema.update({"filename": filename})
+
+            self.logger.debug(f'Adding schema {name}')
+
+            self.set(key=name, value=schema)
+
+    def remove(self, name):
+        data = self.get(name, None)
+        filename = data.get('filename', None)
+
+        if filename in self.buildin_schema_files:
+            self.logger.warning('Cannot remove a building schema! Disable instead.')
+            self.data.pop(filename)
+            return True
+
+        if filename and os.path.isfile(filename):
+            self.logger.info(f'Removing schema {name}')
+            os.rename(filename, f"{filename}.removed")
+
+    def import_all(self):
+        self.logger.debug('Importing all schemas')
+
+        for filename in self.schema_files:
+            self.add(filename=filename)
+
+    def dump_all(self):
+        self.logger.debug('Dumping all schemas to disk')
+
+        for name, schema in self.all():
+            filename = schema.get('filename')
+            if filename in self.buildin_schema_files:
+                continue
+
+            self.logger.debug(f'Writing schema {name} to {filename}')
+            self.write(filename=filename, data=schema)
+
+    def read(self, filename):
+        content = self._read(filename=filename)
+
+        try:
+            return json.loads(content)
+        except JSONDecodeError:
+            self.logger.warning(f"Schema {filename} invalid json! Skipping!")
+
+    @staticmethod
+    def write(filename, data):
+        with open(filename, 'w+', encoding='utf-8') as fh:
+            json.dump(data, fh, ensure_ascii=False, indent=4)

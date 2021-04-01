@@ -1,0 +1,15 @@
+{
+  "result": "ok",
+  "powerUsage": {
+    "value": null,
+    "avgValue": null
+  },
+  "powerProduction": {
+    "value": null,
+    "avgValue": null
+  },
+  "gasUsage": {
+    "value": null,
+    "avgValue": null
+  }
+}
