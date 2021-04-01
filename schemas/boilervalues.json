@@ -1,7 +1,7 @@
 {
     "name": "boilervalues",
     "endpoint": "/boilerstatus/boilervalues.txt",
-    "interval": 10,
+    "interval": 120,
     "fields": {
         "last_update": {
             "type": "String",

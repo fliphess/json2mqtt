@@ -1,4 +1,5 @@
 from json import JSONDecodeError
+from socket import timeout
 from urllib.parse import urljoin
 
 import jmespath
@@ -60,24 +61,38 @@ class Scheduler(object):
 
             self.client.publish(topic=topic, payload=str(value))
 
+    def publish(self, name, response):
+        for topic, payload in (
+                ("request/success", response.status_code),
+                ("request/status_code", response.ok),
+                ("request/reason", response.reason),
+                ("request/url", response.url)):
+            topic = self.client.topic(name=name, key=topic)
+            self.client.publish(topic=topic, payload=payload)
+
+    # noinspection PyUnboundLocalVariable
     def fetch(self, *args, **kwargs):
         url = kwargs.get('url')
         schema = kwargs.get('schema')
+        name = schema.get('name')
+        endpoint = schema.get('endpoint')
 
-        self.logger.debug(f"Fetching data for {schema.get('name')}"
-                          f" on {schema.get('endpoint')}")
-
-        response = requests.get(url, timeout=5)
+        self.logger.debug(f"Fetching data for {name} on {endpoint}")
 
         try:
-            response.raise_for_status()
-            self._process(data=response.json(), schema=schema)
+            response = requests.get(url, timeout=10)
 
-        except HTTPError:
-            self.logger.error(f'Failed to retrieve: {url}: {response.status_code} {response.reason}')
+            self.publish(name=name, response=response)
+
+            response.raise_for_status()
+
+            self._process(data=response.json(), schema=schema)
 
         except JSONDecodeError:
             self.logger.error(f'Invalid json from endpoint: {url}')
+
+        except (timeout, HTTPError):
+            self.logger.error(f'Failed to retrieve: {url}: {response.status_code} {response.reason}')
 
     def start(self):
         self.logger.info('Starting schema crawlers')
@@ -117,10 +132,18 @@ class Scheduler(object):
 
     def remove_timer(self, schema):
         name = schema.get('name')
-
         timer = self.timers.pop(name, None)
+        self.stop_timer(name=name, timer=timer)
+
+    def restart_timer(self, name, timer):
+        self.logger.info(f'Starting schema {name}')
+        timer = self.timers.pop(name, None)
+        if timer:
+            timer.start()
+
+    def stop_timer(self, name, timer):
+        self.logger.info(f'Stopping schema {name}')
 
         if timer:
-            self.logger.info(f'Stopping schema crawler {name}')
             timer.stop()
             timer.join()

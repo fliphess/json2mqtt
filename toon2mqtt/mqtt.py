@@ -16,13 +16,6 @@ class MQTTListener(mqtt.Client):
         self.settings = settings
         self.scheduler = None
 
-        self.host = self.settings.get('mqtt_host')
-        self.port = self.settings.get('mqtt_port')
-        self.username = self.settings.get('mqtt_username')
-        self.password = self.settings.get('mqtt_password')
-        self.use_ssl = self.settings.get('mqtt_ssl')
-        self.ssl_cert = self.settings.get('mqtt_cert')
-
         self.online_topic = f"{self.settings.get('mqtt_topic')}/online"
         self.command_topic = f"{self.settings.get('mqtt_topic')}/command/#"
 
@@ -31,41 +24,53 @@ class MQTTListener(mqtt.Client):
             base=self.settings.get('mqtt_topic'), name=name, key=key
         )
 
-    def on_log(self, mqttc, obj, level, string):
-        self.logger.debug(string)
+    def on_log(self, client, userdata, level, buffer):
+        self.logger.debug(buffer)
 
-    def on_connect(self, mqttc, obj, flags, rc):
-        self.logger.info("Notifying broker we're online")
-        mqttc.publish(topic=self.online_topic, payload=1)
+    def on_connect(self, client, userdata, flags, rc):
+        self.logger.info("Sending to will topic we're online")
+        client.publish(topic=self.online_topic, payload=1)
 
-    def on_disconnect(self, mqttc, obj, rc):
+        self.logger.info("Subscribing to topics...")
+        client.subscribe(self.command_topic)
+
+    def on_disconnect(self, client, userdata, rc):
         self.logger.error("Connection to broker failed... Reconnecting.")
 
-    def on_message(self, mqttc, obj, msg):
-        # TODO - Add control
-        print(obj)
-        print(msg)
-        self.logger.info("Incoming message: {}".format(msg.payload))
-
-    def on_subscribe(self, mqttc, obj, mid, granted_qos):
+    def on_subscribe(self, client, userdata, mid, granted_qos):
         self.logger.info("Subscribed to: {} {}".format(str(mid), str(granted_qos)))
+
+    def on_message(self, client, userdata, message):
+        self.logger.info("Incoming message on {}: {}".format(message.topic, message.payload))
 
     def setup_listener(self):
         self.reconnect_delay_set(min_delay=1, max_delay=30)
         self.will_set(self.online_topic, payload=0, qos=0, retain=True)
 
-        if self.username and self.password:
-            self.username_pw_set(username=self.username, password=self.password)
+        if self.settings.get('mqtt_username') and self.settings.get('mqtt_password'):
+            self.username_pw_set(
+                username=self.settings.get('mqtt_username'),
+                password=self.settings.get('mqtt_password')
+            )
 
-        if self.use_ssl and self.ssl_cert and os.path.isfile(self.ssl_cert):
-            self.tls_set(ca_certs=self.ssl_cert)
+        if self.settings.get('mqtt_ssl') and \
+                self.settings.get('mqtt_cert') and \
+                os.path.isfile(self.settings.get('mqtt_cert')):
+            self.tls_set(ca_certs=self.settings.get('mqtt_cert'))
 
-        self.message_callback_add(self.command_topic, self.on_message)
+        self.message_callback_add(sub=self.command_topic, callback=self.on_message)
 
         self.logger.info("Connecting to mqtt broker: {}://{}:{}".format(
-            "mqtt/ssl" if self.use_ssl else "mqtt", self.host, self.port))
+            "mqtt/ssl" if self.settings.get('mqtt_ssl') else "mqtt",
+            self.settings.get('mqtt_host'),
+            self.settings.get('mqtt_port'))
+        )
 
-        self.connect(host=self.host, port=self.port, keepalive=60)
+        self.connect(
+            host=self.settings.get('mqtt_host'),
+            port=self.settings.get('mqtt_port'),
+            keepalive=60
+        )
 
     def run(self):
         self.setup_listener()
@@ -76,6 +81,7 @@ class MQTTListener(mqtt.Client):
         while True:
             try:
                 self.loop_forever()
+
             except socket.error:
                 time.sleep(5)
 

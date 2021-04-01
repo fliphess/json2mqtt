@@ -17,7 +17,7 @@ def parse_arguments():
         dest="filename",
         type=str,
         required=True,
-        help="The config file to read (if nonexistent a config will be created)"
+        help="The config file to use"
     )
 
     parser.add_argument(
@@ -32,9 +32,22 @@ def parse_arguments():
         "-l",
         "--log",
         dest="logfile",
+        type=str,
         default='toon2mqtt.log',
         help="The log file to write to"
     )
+
+    parser.add_argument(
+        "-i",
+        "--init",
+        dest="initialize",
+        action="store_true",
+        default=False,
+        required=False,
+        help="Create a config file and schema directory"
+    )
+
+
 
     return parser.parse_args()
 

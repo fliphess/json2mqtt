@@ -133,6 +133,7 @@ class Settings(BaseClass, metaclass=Singleton):
             sequence=4,
             offset=2
         )
+
         return yml
 
     def read(self):
@@ -188,29 +189,21 @@ class Settings(BaseClass, metaclass=Singleton):
 class Schemas(BaseClass, metaclass=Singleton):
     class_name = 'Schemas'
 
-    default_schema_files = [
-        "boilervalues.json",
-        "module_version.json",
-        "thermostat_info.json",
-        "edge2stats.json"
-    ]
-
     def __init__(self, schema_dir, logger):
         super().__init__(data={})
         self.schema_dir = schema_dir
         self.logger = logger
 
-        self.buildin_schema_files = [
-            os.path.join(os.path.dirname(__file__), "schemas", schema)
-            for schema in self.default_schema_files
-        ]
-
-        self.external_schema_files = glob.glob(os.path.join(schema_dir, "*.json"))
-
         self.schema_files = [
-            f for f in self.buildin_schema_files + self.external_schema_files
+            f for f in glob.glob(os.path.join(schema_dir, "*.json"))
             if os.path.isfile(f)
         ]
+
+        self.verify()
+
+    def verify(self):
+        if not os.path.isdir(self.schema_dir):
+            os.makedirs(self.schema_dir, exist_ok=True)
 
     def reload(self):
         self.logger.debug(f'Reloading all schemas')
@@ -221,21 +214,14 @@ class Schemas(BaseClass, metaclass=Singleton):
 
         if schema:
             name = schema.get('name')
-
             schema.update({"filename": filename})
 
             self.logger.debug(f'Adding schema {name}')
-
             self.set(key=name, value=schema)
 
     def remove(self, name):
         data = self.get(name, None)
         filename = data.get('filename', None)
-
-        if filename in self.buildin_schema_files:
-            self.logger.warning('Cannot remove a building schema! Disable instead.')
-            self.data.pop(filename)
-            return True
 
         if filename and os.path.isfile(filename):
             self.logger.info(f'Removing schema {name}')
@@ -252,8 +238,6 @@ class Schemas(BaseClass, metaclass=Singleton):
 
         for name, schema in self.all():
             filename = schema.get('filename')
-            if filename in self.buildin_schema_files:
-                continue
 
             self.logger.debug(f'Writing schema {name} to {filename}')
             self.write(filename=filename, data=schema)
@@ -270,3 +254,4 @@ class Schemas(BaseClass, metaclass=Singleton):
     def write(filename, data):
         with open(filename, 'w+', encoding='utf-8') as fh:
             json.dump(data, fh, ensure_ascii=False, indent=4)
+

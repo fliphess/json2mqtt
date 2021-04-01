@@ -1,0 +1,14 @@
+{
+    "name": "local_ip",
+    "host": "fliphess.com",
+    "port": 443,
+    "use_ssl": true,
+    "endpoint": "/ip.json",
+    "interval": 10,
+    "fields": {
+        "local_ip": {
+            "type": "String",
+            "path": "ip"
+        }
+    }
+}
