@@ -36,11 +36,9 @@ def main():
     arguments = parse_arguments()
 
     loglevel = {
-        0: logging.CRITICAL,
-        1: logging.ERROR,
-        2: logging.WARN,
-        3: logging.INFO,
-        4: logging.DEBUG,
+        0: logging.WARN,
+        1: logging.INFO,
+        2: logging.DEBUG,
         None: logging.WARN
     }.get(arguments.loglevel, logging.INFO)
 

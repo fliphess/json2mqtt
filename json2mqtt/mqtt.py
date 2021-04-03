@@ -37,13 +37,13 @@ class MQTTListener(mqtt.Client):
         client.subscribe(self.command_topic)
 
     def on_disconnect(self, client, userdata, rc):
-        self.logger.error("Connection to broker failed... Reconnecting.")
+        self.logger.error("Disconnected from broker....")
 
     def on_subscribe(self, client, userdata, mid, granted_qos):
-        self.logger.info("Subscribed to: {} {}".format(str(mid), str(granted_qos)))
+        self.logger.info(f"Subscribed to: {self.command_topic}")
 
     def on_message(self, client, userdata, message):
-        self.logger.info("Incoming message on {}: {}".format(message.topic, message.payload))
+        self.logger.debug("Incoming message on {}: {}".format(message.topic, message.payload))
 
         section, task = str(message.topic).split('/')[-2:]
 

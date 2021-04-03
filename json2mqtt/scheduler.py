@@ -116,7 +116,9 @@ class Scheduler(object):
             interval = schema.get('interval')
             count = schema.get('count', -1)
 
-            self.logger.info(f'Starting schema crawler {name} for {count} times every {interval}s')
+            self.logger.info(
+                f"Starting {name} {'for {} times'.format(count) if count > 0 else 'repeating'} every {interval}s"
+            )
 
             timer = multitimer.MultiTimer(
                 interval=interval,
