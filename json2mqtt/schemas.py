@@ -96,8 +96,9 @@ class Schemas(dict, metaclass=Singleton):
             self.logger.warning(f'Invalid schema file in {filename}')
             return False
 
-        enabled = schema.get('enabled')
-        if enabled is not None and not enabled:
+        enabled = schema.get('enabled', True)
+
+        if not enabled:
             self.logger.warning(f'Schema file in {filename} is disabled')
             return False
 
