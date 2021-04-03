@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import sys
 
 from pid import PidFile, PidFileAlreadyLockedError
-from toon2mqtt.logging import log
-from toon2mqtt.mqtt import MQTTListener
-from toon2mqtt.settings import Settings, ConfigError, Schemas
+from json2mqtt.mqtt import MQTTListener
+from json2mqtt.schemas import Schemas
+from json2mqtt.settings import Settings, ConfigError
 
 
 def parse_arguments():
@@ -28,44 +29,33 @@ def parse_arguments():
         help="increase output verbosity"
     )
 
-    parser.add_argument(
-        "-l",
-        "--log",
-        dest="logfile",
-        type=str,
-        default='toon2mqtt.log',
-        help="The log file to write to"
-    )
-
-    parser.add_argument(
-        "-i",
-        "--init",
-        dest="initialize",
-        action="store_true",
-        default=False,
-        required=False,
-        help="Create a config file and schema directory"
-    )
-
-
-
     return parser.parse_args()
 
 
 def main():
     arguments = parse_arguments()
 
-    logger = log(
-        level=arguments.loglevel,
-        filename=arguments.logfile,
-    )
+    loglevel = {
+        0: logging.CRITICAL,
+        1: logging.ERROR,
+        2: logging.WARN,
+        3: logging.INFO,
+        4: logging.DEBUG,
+        None: logging.WARN
+    }.get(arguments.loglevel, logging.INFO)
+
+    logging.basicConfig(
+        level=loglevel,
+        format="[%(asctime)s] %(name)s | %(funcName)-20s | %(levelname)s | %(message)s")
+    logger = logging.getLogger('json2mqtt')
 
     try:
-        with PidFile('toon2mqtt', piddir='/var/tmp'):
+        with PidFile('json2mqtt', piddir='/var/tmp'):
             logger.info("Reading configuration file {}".format(arguments.filename))
-
             settings = Settings(filename=arguments.filename)
-            schemas = Schemas(schema_dir=settings.get('schema_dir'), logger=logger)
+
+            logger.info("Reading schema files {}".format(arguments.filename))
+            schemas = Schemas(logger=logger)
             schemas.import_all()
 
             logger.info("Starting MQTT Listener server")

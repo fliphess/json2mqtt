@@ -1,6 +1,6 @@
 {
     "name": "boilervalues",
-    "endpoint": "/boilerstatus/boilervalues.txt",
+    "url": "http://10.30.1.127/boilerstatus/boilervalues.txt",
     "interval": 120,
     "fields": {
         "last_update": {
@@ -8,7 +8,7 @@
             "path": "sampleTime"
         },
         "boiler_setpoint": {
-            "type": "Float",
+            "type": "Integer",
             "path": "boilerSetpoint"
         },
         "room_temperature_setpoint": {

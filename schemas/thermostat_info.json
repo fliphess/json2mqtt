@@ -1,9 +1,9 @@
 {
     "name": "thermostat_info",
-    "endpoint": "/happ_thermstat?action=getThermostatInfo",
+    "url": "http://10.30.1.127/happ_thermstat?action=getThermostatInfo",
     "interval": 120,
     "fields": {
-        "result":{
+        "result": {
             "type": "String",
             "path": "result"
         },
@@ -11,59 +11,59 @@
             "type": "String",
             "path": "currentTemp"
         },
-	"current_setpoint": {
+        "current_setpoint": {
             "type": "String",
             "path": "currentSetpoint"
-	},
-	"current_interval_boiler_setpoint": {
+        },
+        "current_interval_boiler_setpoint": {
             "type": "String",
             "path": "currentInternalBoilerSetpoint"
-	},
-	"program_state": {
+        },
+        "program_state": {
             "type": "String",
             "path": "programState"
         },
-	"active_state": {
+        "active_state": {
             "type": "String",
             "path": "activeState"
         },
-	"next_program": {
+        "next_program": {
             "type": "String",
             "path": "nextProgram"
         },
-	"next_state": {
+        "next_state": {
             "type": "String",
             "path": "nextState"
         },
-	"next_time": {
+        "next_time": {
             "type": "String",
             "path": "nextTime"
         },
-	"next_setpoint": {
+        "next_setpoint": {
             "type": "String",
             "path": "nextSetpoint"
         },
-	"random_config_id": {
+        "random_config_id": {
             "type": "String",
             "path": "randomConfigId"
         },
-	"error_found": {
+        "error_found": {
             "type": "String",
             "path": "errorFound"
         },
-	"connection": {
+        "connection": {
             "type": "String",
             "path": "connection"
         },
-	"burner_info": {
+        "burner_info": {
             "type": "String",
             "path": "burnerInfo"
         },
-	"ot_comm_error": {
+        "ot_comm_error": {
             "type": "String",
             "path": "otCommError"
         },
-	"current_modulation_level": {
+        "current_modulation_level": {
             "type": "String",
             "path": "currentModulationLevel"
         }
