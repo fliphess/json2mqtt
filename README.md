@@ -242,20 +242,12 @@ home/json2mqtt/<schema name>/request/url         # The full url of the request
 The topics to create and manipulate the schemas
 
 ```
-<<<<<<< HEAD
-home/toon2mqtt/command/schema/add                # Add a json schema
-home/toon2mqtt/command/schema/remove             # Remove/Disable a schema
-home/toon2mqtt/command/schema/list               # List all json schemas
-home/toon2mqtt/command/schema/import             # Import all schemas from disk
-home/toon2mqtt/command/schema/dump               # Write all schemas to disk
-=======
 home/json2mqtt/command/schema/add                # Add a json schema from the mqtt payload
 home/json2mqtt/command/schema/add_file           # Add a json schema from a file that is present on disk
 home/json2mqtt/command/schema/remove             # Remove/Disable a schema
 home/json2mqtt/command/schema/list               # List all json schemas
 home/json2mqtt/command/schema/import             # Import all schemas from disk
 home/json2mqtt/command/schema/dump               # Write all schemas to disk
->>>>>>> b600184 (Rename and add some more features)
 ```
 
 Schemas can be manipulated, loaded and written to disk. They are used by the scheduler, but not automatically renewed.
