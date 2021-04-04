@@ -4,8 +4,8 @@ Json2mqtt is a little python daemon that retrieves data
 from json api's and send selected fields to an MQTT broker.
 
 I wrote it to retrieve temperature data from my rooted Toon thermostat,
-but while still in the initial build phase, the toon focus was dropped
-and it continued as a more generic tool.
+but while still in the initial build phase, it became clear that it could be 
+used for more than just toon data and as such it continued as a more generic tool.
 
 It is very useful to retrieve data from any api that returns json,
 select the required fields using jmespath and send it to a topic on a mqtt broker.
