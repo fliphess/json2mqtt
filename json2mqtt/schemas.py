@@ -6,7 +6,6 @@ from json import JSONDecodeError
 from jsonschema import validate, SchemaError
 
 from json2mqtt.scheduler import TYPES
-from json2mqtt.settings import Singleton
 
 
 JSONSCHEMA = {
@@ -67,12 +66,10 @@ JSONSCHEMA = {
 }
 
 
-class Schemas(dict, metaclass=Singleton):
-    schema_dir = "./schemas"
-
-    def __init__(self, logger):
+class Schemas(dict):
+    def __init__(self, logger, schema_dir="./schemas"):
         super().__init__()
-
+        self.schema_dir = schema_dir
         self.logger = logger
 
         self.schema_files = [

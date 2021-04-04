@@ -53,7 +53,7 @@ def main():
             settings = Settings(filename=arguments.filename)
 
             logger.info("Reading schema files {}".format(arguments.filename))
-            schemas = Schemas(logger=logger)
+            schemas = Schemas(logger=logger, schema_dir=settings.schema_dir)
             schemas.import_all()
 
             logger.info("Starting MQTT Listener server")

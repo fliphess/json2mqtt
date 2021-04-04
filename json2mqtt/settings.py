@@ -4,76 +4,35 @@ from ruamel import yaml
 from ruamel.yaml.composer import ComposerError
 
 
-SETTINGS_SCHEMA = {
-    "schema_dir": {
-        "type": str,
-        "default": "./schemas",
-        "required": True
-    },
-    "mqtt_host": {
-        "type": str,
-        "default": "localhost",
-        "required": True
-    },
-    "mqtt_port": {
-        "type":  int,
-        "default": 1883,
-        "required": True
-    },
-    "mqtt_username": {
-        "type": str,
-        "default": "",
-        "required": False
-    },
-    "mqtt_password": {
-        "type": str,
-        "default": "",
-        "required": False
-    },
-    "mqtt_topic": {
-        "type": str,
-        "default": "home/json2mqtt",
-        "required": True
-    },
-    "mqtt_ssl": {
-        "type": bool,
-        "default": False,
-        "required": False
-    },
-    "mqtt_cert": {
-        "type": str,
-        "default": "/etc/ssl/cert.pem",
-        "required": False
-    },
-    "http_host": {
-        "type": str,
-        "default": "",
-        "required": False
-    },
-    "http_port": {
-        "type": int,
-        "default": 80,
-        "required": False
-    }
-}
-
-
 class ConfigError(AssertionError):
     pass
 
 
-class Singleton(type):
-    def __init__(cls, name, bases, attrs, **kwargs):
-        super().__init__(name, bases, attrs)
-        cls._instance = None
+class Settings(object):
+    schema = {
+        "schema_dir": "./schemas",
+        "mqtt_host": "localhost",
+        "mqtt_port": 1883,
+        "mqtt_username": "",
+        "mqtt_password": "",
+        "mqtt_topic": "home/json2mqtt",
+        "mqtt_ssl": False,
+        "mqtt_cert": "/etc/ssl/cert.pem",
+    }
 
-    def __call__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__call__(*args, **kwargs)
-        return cls._instance
+    __slots__ = [
+        'filename',
+        'yaml',
+        'schema_dir',
+        'mqtt_host',
+        'mqtt_port',
+        'mqtt_username',
+        'mqtt_password',
+        'mqtt_topic',
+        'mqtt_ssl',
+        'mqtt_cert'
+    ]
 
-
-class Settings(object, metaclass=Singleton):
     def __init__(self, filename="setting.yaml"):
         self.filename = filename
         self.yaml = self._yaml()
@@ -90,11 +49,7 @@ class Settings(object, metaclass=Singleton):
         yml.preserve_quotes = True
         yml.explicit_start = True
         yml.explicit_end = True
-        yml.indent(
-            mapping=2,
-            sequence=4,
-            offset=2
-        )
+        yml.indent(mapping=2, sequence=4, offset=2)
 
         return yml
 
@@ -118,31 +73,22 @@ class Settings(object, metaclass=Singleton):
 
         for key, value in data.items():
             if not hasattr(self, key):
-                if isinstance(value, str):
-                    value = value.format(**data)
                 setattr(self, key, value)
 
         return True
 
     def verify(self):
-        for key, cfg in SETTINGS_SCHEMA.items():
-            datatype = cfg.get('type')
-            default = cfg.get('default')
-            required = cfg.get('required')
+        for key, default_value in self.schema.items():
+            value = getattr(self, key, default_value)
 
-            value = getattr(self, key, default)
+            if value is None or not hasattr(self, key):
+                raise ConfigError(f'{key} is required but not found in {self.filename}')
 
-            if required and not value or not isinstance(value, datatype):
-                raise ConfigError(f'{key} is required but not found '
-                                  f'or incorrect type in {self.filename}')
         return True
 
     def create(self):
         return self.write(
-            data={
-                key: SETTINGS_SCHEMA[key]["default"]
-                for key in SETTINGS_SCHEMA if SETTINGS_SCHEMA[key]["required"]
-            }
+            data={key: value for key, value in self.schema}
         )
 
     def reload(self):
