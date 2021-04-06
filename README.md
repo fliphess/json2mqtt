@@ -124,7 +124,6 @@ The topics used to publish to in this example are:
 - `home/json2mqtt/module_version/version`
 
 Or you can override the topics using the `topic` field.
-By setting the host, port and ssl settings, in the schema, any json api can be crawled periodically using this tool, as long as you define a schema for the json fields you want to send to mqtt.
 
 
 ## Install
