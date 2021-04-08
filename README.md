@@ -4,14 +4,14 @@ Json2mqtt is a little python daemon that retrieves data
 from json api's and send selected fields to an MQTT broker.
 
 I wrote it to retrieve temperature data from my rooted Toon thermostat,
-but while still in the initial build phase, it became clear that it could be 
+but while still in the initial build phase, it became clear that it could be
 used for more than just toon data and as such it continued as a more generic tool.
 
 It is very useful to retrieve data from any api that returns json,
 select the required fields using jmespath and send it to a topic on a mqtt broker.
 It starts a bunch of timers that crawl several endpoints.
 
-Using the schemas you can give fine grained instructions to the daemon to crawl,
+Using the schemas you can give fine-grained instructions to the daemon,
 both using predefined files or over MQTT.
 
 ## Timers
@@ -19,18 +19,18 @@ both using predefined files or over MQTT.
 Timers are http requests that are executed a defined amount of times or keep running periodically,
 that are running concurrently and send the defined data to MQTT
 
-all data that should be send to the broker can be defined in a schema, which is a json definition
+all data that should be sent to the broker can be defined in a schema, which is a json definition
 that is used to pick all the required fields from the returned json api.
 
-All json files that match the jsonschema definition in the schemas directory that is defined in the config file
-are loaded at startup unless explicitly disabled setting `"enabled": false` in the schema definition.
+All json files that match the jsonschema definition in the `schemas` directory that is defined in the config file
+are loaded at start-up unless explicitly disabled setting `"enabled": false` in the schema definition.
 
 ## Schemas
 
 ### Introduction
 
 There are some predefined json schemas that can be loaded
-from the schemas directory in this repository or over MQTT
+from the `schemas` directory in this repository or over MQTT
 that can be used to poll a rooted Toon.
 
 Additionally, you can write your own schemas and feed them
@@ -69,28 +69,32 @@ Additional optional elements are:
 
 ### Fields
 
-A `field` element consists of 2 fields:
+A `field` element consists of 2 required fields:
 
 - `path`   - The jmespath of the value to send to mqtt
 - `type`   - The type of data in this field
 
 
+Optional fields are:
+- `cast`   - Cast the current `type` to another type, useful for "number" or "true" and other returned strings.
+             Allowed values are equal to the `type` element, but with a bit of common sense, and a bit of python added.
+
 The types available:
 
-- String
-- Integer
-- Float
-- Boolean
-- None
-- List
-- Dictionary
+- `String`
+- `Integer`
+- `Float`
+- `Boolean`
+- `None`
+- `List`
+- `Dictionary`
 
 
 ### Schema example
 
 Example: retrieve the module version data from the toon and send over MQTT
 
-```
+```json
 {
     "name": "module_version",
     "url": "http:///toon.local/happ_thermstat?action=getModuleVersion",
@@ -109,6 +113,7 @@ Example: retrieve the module version data from the toon and send over MQTT
     "fields": {
         "mmb": {
             "type": "String",
+            "cast": "Boolean",
             "path": "mmb"
         },
         "version": {
@@ -130,7 +135,7 @@ Or you can override the topics using the `topic` field.
 
 ### Clone the repo
 
-```
+```shell
 git clone https://github.com/fliphess/json2mqtt.git && cd json2mqtt
 ```
 
@@ -141,7 +146,7 @@ git clone https://github.com/fliphess/json2mqtt.git && cd json2mqtt
 
 Create a virtualenv and install `json2mqtt` and its requirements:
 
-```
+```shell
 python3 -m venv venv
 source venv/bin/activate
 
@@ -152,7 +157,7 @@ pip install  .
 
 A config file is created on first run if nonexistent:
 
-```
+```shell
 json2mqtt --settings settings.yaml --init
 
 vim settings.yaml
@@ -160,7 +165,7 @@ vim settings.yaml
 
 ### Run json2mqtt
 
-```
+```shell
 json2mqtt --config settings -vvv
 ```
 
@@ -169,14 +174,18 @@ json2mqtt --config settings -vvv
 
 ### Build the container:
 
-```
+```shell
 docker build -t json2mqtt .
 ```
 
 ### Create a config file
 
-```
-docker run -ti -v "/tmp:/cfg" --rm json2mqtt  --config /cfg/settings.yaml
+```shell
+docker run \
+  -ti \
+  -v "/tmp:/cfg" \
+  --rm json2mqtt \
+  --config /cfg/settings.yaml
 
 mv /tmp/settings.yaml .
 vim settings.yaml
@@ -184,7 +193,7 @@ vim settings.yaml
 
 ### Run
 
-```
+```shell
 docker run \
 	--rm \
 	-ti \
@@ -198,15 +207,17 @@ docker run \
 
 The config file will be created on first run if it does not exist.
 It will fill up the required fields with the default values.
-This will not work out of the box, as you need to configure your broker first.
+This will not suffice to start the daemon, as you need to configure your broker first.
 
 A full configuration file contains:
 
-```
+```yaml
 mqtt_host: "some.broker"
 mqtt_port: 1883
+
 mqtt_username: "username"
 mqtt_password: "password"
+
 mqtt_topic: home/toon2mqtt
 
 mqtt_ssl: true
@@ -268,4 +279,3 @@ home/json2mqtt/command/scheduler/remove_timer    # Remove a timer
 home/json2mqtt/command/scheduler/start_timer     # Start a stopped timer
 home/json2mqtt/command/scheduler/pause_timer     # Stop a running timer
 ```
-
