@@ -3,7 +3,7 @@
     "url": "https://fliphess.com/ip.json",
     "interval": 10,
     "fields": {
-        "local_ip": {
+        "external_ip": {
             "type": "String",
             "path": "ip"
         }
