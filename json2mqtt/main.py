@@ -36,7 +36,6 @@ def main():
     arguments = parse_arguments()
 
     loglevel = {
-        0: logging.WARN,
         1: logging.INFO,
         2: logging.DEBUG,
         None: logging.WARN

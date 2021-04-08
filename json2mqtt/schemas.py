@@ -3,10 +3,12 @@ import json
 import os
 from json import JSONDecodeError
 
-from jsonschema import validate, SchemaError
+from jsonschema import validate, SchemaError, ValidationError
 
 from json2mqtt.scheduler import TYPES
 
+
+KEYS_PATTERN = f"^({'|'.join(TYPES.keys())})$"
 
 JSONSCHEMA = {
     "type": "object",
@@ -26,6 +28,9 @@ JSONSCHEMA = {
         },
         "timeout": {
             "type": "number"
+        },
+        "topic": {
+            "type": "string",
         },
         "enabled": {
           "type": "boolean"
@@ -50,9 +55,13 @@ JSONSCHEMA = {
                 "path": {
                     "type": "string"
                 },
+                "cast": {
+                    "type": "string",
+                    "pattern": KEYS_PATTERN,
+                },
                 "type": {
                     "type": "string",
-                    "pattern": f"^({'|'.join(TYPES.keys())})$",
+                    "pattern": KEYS_PATTERN,
                 }
             }
         }
@@ -93,12 +102,6 @@ class Schemas(dict):
             self.logger.warning(f'Invalid schema file in {filename}')
             return False
 
-        enabled = schema.get('enabled', True)
-
-        if not enabled:
-            self.logger.warning(f'Schema file in {filename} is disabled')
-            return False
-
         if filename not in self.schema_files:
             self.schema_files.append(filename)
 
@@ -111,10 +114,15 @@ class Schemas(dict):
     def add_schema(self, schema):
         try:
             validate(instance=schema, schema=JSONSCHEMA)
-        except SchemaError as e:
+        except (SchemaError, ValidationError) as e:
             return False
 
         name = schema.get('name')
+        enabled = schema.get('enabled', True)
+
+        if enabled is False:
+            self.logger.warning(f'Schema file {name} is disabled')
+            return False
 
         self.logger.debug(f'Adding schema {name}')
         self.update({name: schema})
@@ -156,9 +164,7 @@ class Schemas(dict):
 
     def read(self, filename):
         with open(filename, 'r') as fh:
-            data = self.load(content=fh.read())
-        if data:
-            return data
+            return self.load(content=fh.read())
 
     @staticmethod
     def write(filename, data):

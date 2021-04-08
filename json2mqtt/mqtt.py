@@ -21,10 +21,9 @@ class MQTTListener(mqtt.Client):
         self.command_topic = f"{self.settings.mqtt_topic}/command/+/+"
         self.command_handler = None
 
-    def topic(self, name, key):
-        return "{base}/{name}/{key}".format(
-            base=self.settings.mqtt_topic, name=name, key=key
-        )
+    def topic(self, name, key, base_topic=None):
+        base = base_topic or self.settings.mqtt_topic
+        return f"{base}/{name}/{key}"
 
     def on_log(self, client, userdata, level, buffer):
         self.logger.debug(buffer)

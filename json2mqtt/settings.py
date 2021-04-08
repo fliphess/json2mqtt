@@ -40,7 +40,11 @@ class Settings(object):
         if not os.path.isfile(filename):
             self.create()
 
-        self.parse()
+        data = self.read()
+        for key, value in data.items():
+            if not hasattr(self, key):
+                setattr(self, key, value)
+
         self.verify()
 
     @staticmethod
@@ -68,19 +72,9 @@ class Settings(object):
             self.yaml.dump(data, fh)
         return True
 
-    def parse(self):
-        data = self.read()
-
-        for key, value in data.items():
-            if not hasattr(self, key):
-                setattr(self, key, value)
-
-        return True
-
     def verify(self):
         for key, default_value in self.schema.items():
             value = getattr(self, key, default_value)
-
             if value is None or not hasattr(self, key):
                 raise ConfigError(f'{key} is required but not found in {self.filename}')
 

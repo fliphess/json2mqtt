@@ -45,22 +45,34 @@ class Scheduler(object):
                 self.logger.debug(f"Incorrect type for {name}: No {stringtype}: Skipping values for {key}={value}")
                 continue
 
-            self.logger.debug(f'Sending data for {name}.{key}')
-            topic = self.client.topic(name=name, key=key)
+            casttype = cfg.get('cast', None)
+            if casttype:
+                cast_to = TYPES.get(casttype.title(), None)
+                try:
+                    value = cast_to(value)
+                except ValueError:
+                    pass
 
+            topic = self.client.topic(
+                name=name,
+                key=key,
+                base_topic=schema.get('topic', None)
+            )
+
+            self.logger.debug(f'Sending data for {name}.{key}')
             self.client.publish(topic=topic, payload=str(value))
 
         return True
 
-    def publish(self, name, response):
-        for topic, payload in (
+    def publish(self, name, response, base_topic=None):
+        for postfix, payload in (
                 ("request/status_code", response.status_code),
                 ("request/reason", response.reason),
                 ("request/success", response.ok),
                 ("request/url", response.url),
                 ("request/elapsed", str(response.elapsed))):
-            topic = self.client.topic(name=name, key=topic)
 
+            topic = self.client.topic(name=name, key=postfix, base_topic=base_topic)
             self.client.publish(topic=topic, payload=payload)
 
         return True
@@ -70,6 +82,7 @@ class Scheduler(object):
         schema = kwargs.get('schema')
         name = schema.get('name')
         url = schema.get('url')
+        topic = schema.get('topic', None)
         timeout = schema.get('timeout', 10)
         headers = {
             key: value for key, value in schema.get('headers', {})
@@ -79,7 +92,7 @@ class Scheduler(object):
 
         try:
             response = requests.get(url, timeout=timeout, headers=headers)
-            self.publish(name=name, response=response)
+            self.publish(name=name, response=response, base_topic=topic)
 
             response.raise_for_status()
             return self._process(data=response.json(), schema=schema)
