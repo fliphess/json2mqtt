@@ -6,7 +6,7 @@
         "mmb": {
             "type": "String",
             "path": "mmb",
-	    "cast": "Boolean"
+            "cast": "Boolean"
         },
         "version": {
             "type": "String",
