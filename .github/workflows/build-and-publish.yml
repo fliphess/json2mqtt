@@ -7,16 +7,13 @@ jobs:
   build-and-publish:
     name: Publish Python distribution to PyPI and TestPyPI
     runs-on: ubuntu-latest
-    strategy:
-      matrix: 
-        python-version: [3.7, 3.8, 3.9]
     steps:
     - uses: actions/checkout@master
     
-    - name: Setup Python ${{ matrix.python-version }}
+    - name: Setup Python 3.9
       uses: actions/setup-python@v1
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.9
         
     - name: Install dependencies
       run: >-
