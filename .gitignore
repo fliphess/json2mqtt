@@ -131,3 +131,5 @@ settings.yaml
 toon2mqtt.log settings.yaml
 .idea
 *.sw[pod]
+main.py
+todo.txt
