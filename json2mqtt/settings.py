@@ -4,7 +4,7 @@ from ruamel import yaml
 from ruamel.yaml.composer import ComposerError
 
 
-class ConfigError(AssertionError):
+class ConfigError(RuntimeError):
     pass
 
 

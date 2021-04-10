@@ -1,40 +1,45 @@
 # Json HTTP to MQTT utility.
 
 Json2mqtt is a little python daemon that retrieves data
-from json api's and send selected fields to an MQTT broker.
+from json api's and sends selected fields to an MQTT broker.
 
-I wrote it to retrieve temperature data from my rooted Toon thermostat,
-but while still in the initial build phase, it became clear that it could be
-used for more than just toon data and as such it continued as a more generic tool.
+It can be used to retrieve data from any http api that returns json.
 
-It is very useful to retrieve data from any api that returns json,
-select the required fields using jmespath and send it to a topic on a mqtt broker.
-It starts a bunch of timers that crawl several endpoints.
+Write a (bunch of) schema file(s),
+feed it to the daemon by files or over mqtt
+and every interval you receive the returns on a mqtt topic.
 
-Using the schemas you can give fine-grained instructions to the daemon,
-both using predefined files or over MQTT.
+Using the schemas you can give fine-grained instructions to the daemon
+which elements you want to publish at which interval
+
 
 ## Timers
 
-Timers are http requests that are executed a defined amount of times or keep running periodically,
-that are running concurrently and send the defined data to MQTT
+For each schema, a new timer is started in its own thread.
 
-all data that should be sent to the broker can be defined in a schema, which is a json definition
-that is used to pick all the required fields from the returned json api.
+They remain in sleep state until the next interval,
+and keep doing this until their count value is reached (or indefinitely).
 
-All json files that match the jsonschema definition in the `schemas` directory that is defined in the config file
-are loaded at start-up unless explicitly disabled setting `"enabled": false` in the schema definition.
+When a timer triggers a new data retrieval,
+the requested fields and some metrics about the request
+are sent to the mqtt broker.
 
 ## Schemas
 
-### Introduction
+All schemas, in the `schemas_dir` directory, as configured in `settings.yaml`
+are loaded at start-up unless explicitly disabled
+setting `"enabled": false` in the schema definition.
 
-There are some predefined json schemas that can be loaded
-from the `schemas` directory in this repository or over MQTT
-that can be used to poll a rooted Toon.
+There are some predefined schemas that can be used
+in the `schemas` directory in this repository,
+that you can use to poll a rooted Toon.
 
-Additionally, you can write your own schemas and feed them
+A schema is a json definition containing instructions
+for the daemon on which fields to publish to MQTT
+
+You can write your own schemas and feed them
 to this service as a file or over MQTT.
+
 
 ### Schema required fields
 
@@ -49,12 +54,12 @@ A schema consists of 4 main (required) elements:
                are to be expected in the retrieved json. (more info below)
 
 
-### Additional schema elements
+### Additional/Optional schema elements
 
 Additional optional elements are:
 
 - `topic`    - Override the topic where to send the data to.
-               (The topic is appended with the value of the  `name` element)
+               (The topic is appended with the value of the `name` of the schema)
 
 - `count`    - How many times the crawl should be performed. Default is `-1`,
                which keeps repeating the request until the timer is stopped,
@@ -76,6 +81,7 @@ A `field` element consists of 2 required fields:
 
 
 Optional fields are:
+
 - `cast`   - Cast the current `type` to another type, useful for "number" or "true" and other returned strings.
              Allowed values are equal to the `type` element, but with a bit of common sense, and a bit of python added.
 
@@ -249,33 +255,82 @@ home/json2mqtt/<schema name>/request/url         # The full url of the request
 
 ### Command topics
 
-The topics to create and manipulate the schemas
+The topics to publish to, to create, list and manipulate the schemas
 
 ```
 home/json2mqtt/command/schema/add                # Add a json schema from the mqtt payload
+                                                 # Input: a json schema
+
 home/json2mqtt/command/schema/add_file           # Add a json schema from a file that is present on disk
+                                                 # Input: a filename of a file in the schema_dir
+
 home/json2mqtt/command/schema/remove             # Remove/Disable a schema
+                                                 # Input: the name of the schema to remove (See: `schema/list`)
+
 home/json2mqtt/command/schema/list               # List all json schemas
+                                                 # No input required, an empty string or a 0 suffices.
+
 home/json2mqtt/command/schema/import             # Import all schemas from disk
+                                                 # No input required, an empty string or a 0 suffices.
+
 home/json2mqtt/command/schema/dump               # Write all schemas to disk
+                                                 # No input required, an empty string or a 0 suffices.
 ```
 
-Schemas can be manipulated, loaded and written to disk. They are used by the scheduler, but not automatically renewed.
-To update the timers that use the schemas, you additionally need to reload the the scheduler task(s)
-
-This is useful to reuse a schema, only changing the host or portname for another environment polling the same data, using only MQTT
-
+Schemas can be manipulated, loaded and written to disk.
+They are used by the scheduler, but not automatically renewed.
+To update the timers that use the schemas, you additionally need to reload the scheduler task(s)
 
 ### Timer topics
 
-Timers are the actual crawling of the endpoint. These can be controlled separately from the schemas that are used to instruct what to crawl and how often.
 
+Timers can be controlled separately from the schemas that are used to instruct what to crawl and how often.
 ```
 home/json2mqtt/command/scheduler/list            # List all timers
+                                                 # No input required, an empty string or a 0 suffices.
+
 home/json2mqtt/command/scheduler/stop            # Stop all timers
-home/json2mqtt/command/scheduler/start           # Start all times
-home/json2mqtt/command/scheduler/add_timer       # Add a timer using a json schema, do not save anything to schemas, just start the timer
+                                                 # No input required, an empty string or a 0 suffices.
+
+home/json2mqtt/command/scheduler/start           # Start all (not running) timers
+                                                 # No input required, an empty string or a 0 suffices.
+
+home/json2mqtt/command/scheduler/add_timer       # Add a timer using a json schema, do not save anything to schemas, 
+                                                 # just start the timer (single use, will be gone after a restart)
+
 home/json2mqtt/command/scheduler/remove_timer    # Remove a timer
 home/json2mqtt/command/scheduler/start_timer     # Start a stopped timer
 home/json2mqtt/command/scheduler/pause_timer     # Stop a running timer
+```
+
+All commands return their output to `home/json2mqtt/talkback`
+
+
+## Known issues
+
+### Casting to bool
+
+Casting string "1" and "0" values to a boolean is tricky:
+
+```
+In [1]: bool("0")
+Out[1]: True
+```
+
+Instead, don't do a cast at all and use  the `1` and `0` strings directly.
+
+### Dotted fields
+
+Due to the way [jmespath for python](https://pypi.org/project/jmespath/) works, keys containing a dot,
+need to be contained by escaped double quotes:
+
+```
+{
+  "fields": {
+      "electricity_delivered_lt_flow": {
+        "type": "String",
+        "path": "\"dev_2.6\".CurrentElectricityFlow"
+      },
+  }
+}
 ```

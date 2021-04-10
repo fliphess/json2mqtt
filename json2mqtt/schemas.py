@@ -1,10 +1,9 @@
 import glob
 import json
 import os
+
 from json import JSONDecodeError
-
 from jsonschema import validate, SchemaError, ValidationError
-
 from json2mqtt.scheduler import TYPES
 
 

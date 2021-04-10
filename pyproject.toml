@@ -1,0 +1,36 @@
+[build-system]
+build-backend    = "flit_core.buildapi"
+requires         = [
+    "flit_core >=2,<4"
+]
+
+[tool.flit.metadata]
+module           = "json2mqtt"
+author           = "Flip Hess"
+author-email     = "flip@fliphess.com"
+home-page        = "https://github.com/fliphess/json2mqtt"
+
+description-file = "README.md"
+
+requires-python  = ">=3.7"
+requires         = [
+    "jmespath",
+    "jsonschema",
+    "multitimer",
+    "paho-mqtt",
+    "pid",
+    "requests",
+    "rfc3986-validator",
+    "ruamel.yaml"
+]
+
+classifiers      = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+
+[tool.flit.scripts]
+json2mqtt        = "json2mqtt.__main__:main"
+

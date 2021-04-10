@@ -1,3 +1,4 @@
+import json
 import os
 from json import JSONDecodeError
 
@@ -58,9 +59,12 @@ class Scheduler(object):
                 key=key,
                 base_topic=schema.get('topic', None)
             )
-
             self.logger.debug(f'Sending data for {name}.{key}')
-            self.client.publish(topic=topic, payload=str(value))
+
+            if isinstance(value, list) or isinstance(value, dict):
+                value = json.dumps(value)
+
+            self.client.publish(topic=topic, payload=value)
 
         return True
 

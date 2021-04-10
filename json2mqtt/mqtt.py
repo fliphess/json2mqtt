@@ -32,7 +32,7 @@ class MQTTListener(mqtt.Client):
         self.logger.info("Sending to will topic we're online")
         client.publish(topic=self.online_topic, payload=1)
 
-        self.logger.info("Subscribing to topics...")
+        self.logger.info("Subscribing to command topic...")
         client.subscribe(self.command_topic)
 
     def on_disconnect(self, client, userdata, rc):
@@ -92,7 +92,6 @@ class MQTTListener(mqtt.Client):
         while True:
             try:
                 self.loop_forever()
-
             except socket.error:
                 time.sleep(5)
 

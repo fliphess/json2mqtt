@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json2mqtt
 import logging
 import sys
 
@@ -10,7 +11,7 @@ from json2mqtt.settings import Settings, ConfigError
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Toon2MQTT")
+    parser = argparse.ArgumentParser(description=json2mqtt.__doc__)
 
     parser.add_argument(
         "-c",
@@ -32,19 +33,26 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def main():
-    arguments = parse_arguments()
-
+def log(level):
     loglevel = {
-        1: logging.INFO,
-        2: logging.DEBUG,
-        None: logging.WARN
-    }.get(arguments.loglevel, logging.INFO)
+        1: logging.WARN,
+        2: logging.INFO,
+        3: logging.DEBUG,
+        None: logging.INFO,
+    }.get(level, logging.INFO)
 
     logging.basicConfig(
         level=loglevel,
-        format="[%(asctime)s] %(name)s | %(funcName)-20s | %(levelname)s | %(message)s")
-    logger = logging.getLogger('json2mqtt')
+        format="[%(asctime)s] %(name)s | %(funcName)-20s | %(levelname)s | %(message)s"
+    )
+    return logging.getLogger('json2mqtt')
+
+
+def main():
+    arguments = parse_arguments()
+    logger = log(arguments.loglevel)
+
+    logger.warning('Starting json2mqtt')
 
     try:
         with PidFile('json2mqtt', piddir='/var/tmp'):
