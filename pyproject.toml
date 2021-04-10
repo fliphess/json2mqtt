@@ -35,9 +35,15 @@ classifiers      = [
 test             = [
     "pytest",
     "pytest-cov",
+    "pyproject-flake8",
     "mock",
 ]
 
 [tool.flit.scripts]
 json2mqtt        = "json2mqtt.__main__:main"
+
+[tool.flake8]
+max-line-length  = 250
+extend-ignore    = "E203,"
+max-complexity   = 10
 
