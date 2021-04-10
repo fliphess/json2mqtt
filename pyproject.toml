@@ -31,6 +31,13 @@ classifiers      = [
     "Programming Language :: Python :: 3.9",
 ]
 
+[tool.flit.metadata.requires-extra]
+test             = [
+    "pytest",
+    "pytest-cov",
+    "mock",
+]
+
 [tool.flit.scripts]
 json2mqtt        = "json2mqtt.__main__:main"
 
