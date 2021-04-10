@@ -52,7 +52,7 @@ class CommandHandler(object):
         if self.schemas.import_all():
             self.client.publish(topic=self.topic, payload="Imported all schemas from disk")
         else:
-            self.client.publish(topic=self.topic, payload=f"Import failed")
+            self.client.publish(topic=self.topic, payload="Import failed")
 
     def schema_dump(self, payload):
         self.logger.debug('Running schema/dump')
@@ -67,13 +67,13 @@ class CommandHandler(object):
 
         data = self.schemas.load(payload)
         if not data:
-            self.client.publish(topic=self.topic, payload=f"Invalid json for schema!")
+            self.client.publish(topic=self.topic, payload="Invalid json for schema!")
             return False
 
         if self.schemas.add_schema(schema=data):
             self.client.publish(topic=self.topic, payload=f"Schema {data.get('name')} added to schemas")
         else:
-            self.client.publish(topic=self.topic, payload=f"Failed to add payload to schemas")
+            self.client.publish(topic=self.topic, payload="Failed to add payload to schemas")
 
     def schema_add_file(self, payload):
         self.logger.debug('Running schema/add_file')
@@ -83,9 +83,9 @@ class CommandHandler(object):
             if self.schemas.add_schema_file(filename=filename):
                 self.client.publish(topic=self.topic, payload=f"Schema {payload} loaded from file")
             else:
-                self.client.publish(topic=self.topic, payload=f"Failed to load file from payload to schemas")
+                self.client.publish(topic=self.topic, payload="Failed to load file from payload to schemas")
         else:
-            self.client.publish(topic=self.topic, payload=f"Schema file from payload not found")
+            self.client.publish(topic=self.topic, payload="Schema file from payload not found")
 
     def schema_remove(self, payload):
         self.logger.debug('Running schema/remove')
@@ -93,7 +93,7 @@ class CommandHandler(object):
         if self.schemas.remove_schema(name=payload):
             self.client.publish(topic=self.topic, payload=f"Schema {payload} removed from schemas")
         else:
-            self.client.publish(topic=self.topic, payload=f"Schema from payload not found")
+            self.client.publish(topic=self.topic, payload="Schema from payload not found")
 
     def scheduler_list(self, payload):
         self.logger.debug('Running scheduler/list')

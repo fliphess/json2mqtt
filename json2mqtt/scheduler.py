@@ -1,10 +1,10 @@
 import json
-import os
-from json import JSONDecodeError
-
 import jmespath
 import multitimer
 import requests
+
+from json import JSONDecodeError
+
 
 TYPES = {
     "String": str,

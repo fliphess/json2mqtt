@@ -91,7 +91,7 @@ class Schemas(dict):
             os.makedirs(self.schema_dir, exist_ok=True)
 
     def reload(self):
-        self.logger.debug(f'Reloading all schemas')
+        self.logger.debug('Reloading all schemas')
         self.__init__(logger=self.logger)
 
     def add_schema_file(self, filename):
@@ -113,7 +113,7 @@ class Schemas(dict):
     def add_schema(self, schema):
         try:
             validate(instance=schema, schema=JSONSCHEMA)
-        except (SchemaError, ValidationError) as e:
+        except (SchemaError, ValidationError):
             return False
 
         name = schema.get('name')
