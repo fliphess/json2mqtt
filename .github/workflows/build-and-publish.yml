@@ -17,7 +17,7 @@ jobs:
         
     - name: Install dependencies
       run: >-
-        python -m pip --no-cache-dir --upgrade --quiet install pip flit
+        python -m pip --no-cache-dir install --upgrade  pip flit
 
     - name: Build a binary wheel and a source tarball
       run: >-
