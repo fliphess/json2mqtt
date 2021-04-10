@@ -4,7 +4,7 @@ on:
     tags:
       - '*'
 jobs:
-  build-n-publish:
+  build-and-publish:
     name: Publish Python distribution to PyPI and TestPyPI
     runs-on: ubuntu-latest
     strategy:
