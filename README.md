@@ -1,3 +1,7 @@
+[![CodeQL](https://github.com/fliphess/json2mqtt/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/fliphess/json2mqtt/actions/workflows/codeql-analysis.yml)
+[![Publish Python distribution to PyPI and TestPyPI](https://github.com/fliphess/json2mqtt/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/fliphess/json2mqtt/actions/workflows/build-and-publish.yml)
+[![Python application](https://github.com/fliphess/json2mqtt/actions/workflows/test-and-lint.yml/badge.svg?branch=master)](https://github.com/fliphess/json2mqtt/actions/workflows/test-and-lint.yml)
+
 # Json HTTP to MQTT utility.
 
 Json2mqtt is a little python daemon that retrieves data
